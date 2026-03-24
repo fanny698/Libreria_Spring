@@ -36,16 +36,19 @@ public class LibroController {
     @GetMapping
     public ResponseEntity<?> getBooks(){//ya no va a ser lista por si sola , ahora es con responseentity(onjeto de respuesta que quiero enviar ) adelante 
         List<Libro> libros = libroService.getBooks();
+        Map<String,Object> response = new HashMap<>(); //llave objeto
         if(libros == null || libros.isEmpty()){
-            //llave objeto
-            Map<String,Object> response = new HashMap<>();
+           
             response.put("timestamp",LocalDateTime.now());
             response.put("status",HttpStatus.NO_CONTENT.value());
-            response.put("message", "No hya libros registrados");
+            response.put("message", "No hay libros registrados");
             response.put("data", "null");//es mejor enviar lista vacia 
             return ResponseEntity.ok(response);
         }
-        return ResponseEntity.ok(libros);
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.OK.value());
+        response.put("data", libros);//es mejor enviar lista vacia 
+        return ResponseEntity.ok(response);
         
     }
 
