@@ -4,6 +4,7 @@ import com.biblioteca.model.Libro;
 import com.biblioteca.service.LibroService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,10 +13,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping ("/api/v1/libros") //peticion para acceder a la data que le estoy pasando y para ir probando PUT,DELETE,POST,GET .
@@ -24,8 +34,19 @@ public class LibroController {
     private LibroService libroService;
 
     @GetMapping
-    public List<Libro> getBooks(){
-        return libroService.getBooks();
+    public ResponseEntity<?> getBooks(){//ya no va a ser lista por si sola , ahora es con responseentity(onjeto de respuesta que quiero enviar ) adelante 
+        List<Libro> libros = libroService.getBooks();
+        if(libros == null || libros.isEmpty()){
+            //llave objeto
+            Map<String,Object> response = new HashMap<>();
+            response.put("timestamp",LocalDateTime.now());
+            response.put("status",HttpStatus.NO_CONTENT.value());
+            response.put("message", "No hya libros registrados");
+            response.put("data", "null");//es mejor enviar lista vacia 
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.ok(libros);
+        
     }
 
     // si hago la misma ruta de raiz localhost:8080/api/v1/libros y se le agrega un 1 ,este busca solo 1 libro no todos 
