@@ -25,6 +25,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.HashMap;
 
 @RestController
@@ -38,7 +39,6 @@ public class LibroController {
         List<Libro> libros = libroService.getBooks();
         Map<String,Object> response = new HashMap<>(); //llave objeto
         if(libros == null || libros.isEmpty()){
-           
             response.put("timestamp",LocalDateTime.now());
             response.put("status",HttpStatus.NO_CONTENT.value());
             response.put("message", "No hay libros registrados");
@@ -56,8 +56,73 @@ public class LibroController {
     @GetMapping("{id}")//obtener
     public Libro getBookById(@PathVariable int id){
         return libroService.getBookById(id);
+
     }
+
+    // si uno pone el id y isbn es igual por eso se busca con "localhost:8080/api/libros/isbn/849898"
+    // busca por isbn
+    @GetMapping("/isbn/{isbn}")
+    public Libro getBookByIsbn(@PathVariable String isbn){
+        return libroService.getBookByIsbn(isbn);
+    }
+
     
+    //busca por id total {id}
+    @GetMapping("/total")
+    public int totalLibrosV2(){
+        return libroService.totalLibrosV2();
+    
+    }
+
+    // buscar por año 
+    @GetMapping("/anio/{anio}/cantidad")
+    public ResponseEntity<?> getCountByYear(@PathVariable int anio){
+        long cantidad = libroService.countBookByYear(anio);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.OK.value());
+        response.put("anio", anio);
+        response.put("cantidad", cantidad);
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    //buscar por libro mas antiguo 
+    @GetMapping("/antiguo")
+    public ResponseEntity<?> getOldestBook(){
+        Optional<Libro> libroAntiguo = libroService.getOldestBook();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.OK.value());
+
+        if (libroAntiguo.isPresent()){
+            response.put("message", "Libro mas antiguo encontrado");
+            response.put("data", libroAntiguo.get());
+            response.put("anio_publicacion", libroAntiguo.get().getFechaPublicacion());
+        } else{
+            response.put("message", "No hay libros registrados");
+            response.put("data", null);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    //Endpoint para obtener estadisticas de libros por año
+    @GetMapping("/estadisticas/anios")
+    public ResponseEntity<?> getBooksStaticsByYear(){
+        Map<Integer, Long> estadisticas = libroService.countBookByYearGrouped();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.OK.value());
+        response.put("estadisticas", estadisticas);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping //guardar /insert
     public Libro saveBook(@RequestBody Libro libro){
         return libroService.saveBook(libro);
@@ -73,6 +138,7 @@ public class LibroController {
     public String delteBook(@PathVariable int id){
         return libroService.deleteBook(id);
     }
+
 
 
 }
